@@ -78,7 +78,7 @@ def index():
 
         return redirect(url_for('show_story', story_id=story_id, admin=request.args.get('admin')))
 
-    return render_template_string(INDEX_TEMPLATE, stories=stories, admin=request.args.get('admin') == ADMIN_KEY)
+    return render_template_string(INDEX_TEMPLATE, stories=stories, admin=session.get('admin', False))
 
 @app.route('/story/<story_id>', methods=['GET', 'POST'])
 def show_story(story_id):
@@ -94,8 +94,7 @@ def show_story(story_id):
             story['comments'].append(comment)
             save_stories(stories)
 
-    admin_mode = request.args.get('admin') == ADMIN_KEY
-    return render_template_string(STORY_TEMPLATE, story=story, admin=admin_mode)
+    return render_template_string(STORY_TEMPLATE, story=story, admin=session.get('admin', False))
 
 @app.route('/like/<story_id>', methods=['POST'])
 def like_story(story_id):
