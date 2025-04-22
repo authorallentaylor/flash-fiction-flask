@@ -60,7 +60,7 @@ def index():
             'byline': byline,
             'text': text,
             'image': filename,
-                        'likes': 0,
+            'likes': 0,
             'comments': []
         }
 
@@ -94,11 +94,11 @@ def like_story(story_id):
             story['likes'] += 1
             break
     save_stories(stories)
-    return redirect(url_for('show_story', story_id=story_id))
+    return redirect(url_for('index'))
 
 @app.route('/delete/<story_id>', methods=['POST'])
 def delete_story(story_id):
-        admin_mode = request.args.get('admin') == ADMIN_KEY
+    admin_mode = request.args.get('admin') == ADMIN_KEY
     stories = load_stories()
     story = next((s for s in stories if s['id'] == story_id), None)
 
@@ -135,15 +135,18 @@ INDEX_TEMPLATE = """
     <input name="byline" placeholder="Byline (e.g., Jane Doe)" required>
     <textarea name="text" placeholder="Write your story here (max 1,000 words)" rows="10" required></textarea>
     <input type="file" name="image" accept="image/*">
-        <button type="submit">Publish</button>
+    <button type="submit">Publish</button>
   </form>
 
   <h2>Published Stories</h2>
   {% for story in stories %}
     <div class="story-link">
       <a href="{{ url_for('show_story', story_id=story.id) }}">
-        <strong>{{ story.title }}</strong> by {{ story.byline }} ({{ story.likes }} 👍)
+        <strong>{{ story.title }}</strong> by {{ story.byline }}
       </a>
+      <form method="POST" action="{{ url_for('like_story', story_id=story.id) }}">
+        <button type="submit">👍 Like ({{ story.likes }})</button>
+      </form>
       {% if admin %}
         <form method="POST" action="{{ url_for('delete_story', story_id=story.id) }}?admin={{ admin|tojson|safe }}" style="margin-top:0.5rem">
           <button type="submit" onclick="return confirm('Delete this story?')">Delete</button>
