@@ -98,8 +98,7 @@ def like_story(story_id):
 
 @app.route('/delete/<story_id>', methods=['POST'])
 def delete_story(story_id):
-    code = request.form.get('delete_code', '')
-    admin_mode = request.args.get('admin') == ADMIN_KEY
+        admin_mode = request.args.get('admin') == ADMIN_KEY
     stories = load_stories()
     story = next((s for s in stories if s['id'] == story_id), None)
 
@@ -107,7 +106,7 @@ def delete_story(story_id):
         abort(404)
 
     if not admin_mode:
-        return "Unauthorized: invalid delete code", 403
+        return "Unauthorized: admin access required", 403
 
     stories = [s for s in stories if s['id'] != story_id]
     save_stories(stories)
