@@ -72,7 +72,7 @@ def index():
         stories.append(new_story)
         save_stories(stories)
 
-        return redirect(url_for('show_story', story_id=story_id))
+        return redirect(url_for('show_story', story_id=story_id, admin=request.args.get('admin')))
 
     return render_template_string(INDEX_TEMPLATE, stories=stories, admin=request.args.get('admin') == ADMIN_KEY)
 
