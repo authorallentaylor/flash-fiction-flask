@@ -89,7 +89,8 @@ def show_story(story_id):
             story['comments'].append(comment)
             save_stories(stories)
 
-    return render_template_string(STORY_TEMPLATE, story=story, admin=request.args.get('admin') == ADMIN_KEY)
+    admin_mode = request.args.get('admin') == ADMIN_KEY
+    return render_template_string(STORY_TEMPLATE, story=story, admin=admin_mode)
 
 @app.route('/like/<story_id>', methods=['POST'])
 def like_story(story_id):
