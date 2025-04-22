@@ -5,6 +5,7 @@ import uuid
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.secret_key = 'your-secret-key'
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -27,9 +28,13 @@ def save_stories(stories):
         json.dump(stories, f, indent=2)
 
 @app.route('/', methods=['GET', 'POST'])
+from flask import session
+
 def index():
     stories = load_stories()
-    admin_mode = request.args.get('admin') == ADMIN_KEY
+    if request.args.get('admin') == ADMIN_KEY:
+        session['admin'] = True
+    admin_mode = session.get('admin', False)
 
     cutoff = time.time() - 120 * 24 * 60 * 60
     for story in stories:
@@ -78,6 +83,7 @@ def index():
 
 @app.route('/story/<story_id>', methods=['GET', 'POST'])
 def show_story(story_id):
+    admin_mode = session.get('admin', False)
     stories = load_stories()
     story = next((s for s in stories if s['id'] == story_id), None)
     if not story:
@@ -104,7 +110,7 @@ def like_story(story_id):
 
 @app.route('/delete/<story_id>', methods=['POST'])
 def delete_story(story_id):
-    admin_mode = request.args.get('admin') == ADMIN_KEY
+    admin_mode = session.get('admin', False)
     stories = load_stories()
     story = next((s for s in stories if s['id'] == story_id), None)
 
