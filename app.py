@@ -32,7 +32,10 @@ def index():
     admin_mode = request.args.get('admin') == ADMIN_KEY
 
     cutoff = time.time() - 120 * 24 * 60 * 60
-    stories = [s for s in stories if s.get('timestamp', time.time()) >= cutoff]
+    for story in stories:
+        if 'timestamp' not in story:
+            story['timestamp'] = time.time()
+    stories = [s for s in stories if s['timestamp'] >= cutoff]
     save_stories(stories)
     stories = load_stories()
     stories = sorted(stories, key=lambda x: x['id'], reverse=True)
@@ -150,7 +153,7 @@ INDEX_TEMPLATE = """
         <button type="submit">👍 Like ({{ story.likes }})</button>
       </form>
       {% if admin %}
-        <form method="POST" action="{{ url_for('delete_story', story_id=story.id) }}?admin={{ admin|tojson|safe }}" style="margin-top:0.5rem">
+        <form method="POST" action="{{ url_for('delete_story', story_id=story.id) }}?admin=secret-admin" style="margin-top:0.5rem">
           <button type="submit" onclick="return confirm('Delete this story?')">Delete</button>
         </form>
       {% endif %}
