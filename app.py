@@ -39,7 +39,7 @@ def index():
         title = request.form['title']
         byline = request.form['byline']
         text = request.form['text']
-        delete_code = request.form.get('delete_code', '')
+        
         image_file = request.files.get('image')
 
         word_count = len(text.strip().split())
@@ -60,8 +60,7 @@ def index():
             'byline': byline,
             'text': text,
             'image': filename,
-            'delete_code': delete_code,
-            'likes': 0,
+                        'likes': 0,
             'comments': []
         }
 
@@ -107,7 +106,7 @@ def delete_story(story_id):
     if not story:
         abort(404)
 
-    if not admin_mode and story.get('delete_code') != code:
+    if not admin_mode:
         return "Unauthorized: invalid delete code", 403
 
     stories = [s for s in stories if s['id'] != story_id]
@@ -137,8 +136,7 @@ INDEX_TEMPLATE = """
     <input name="byline" placeholder="Byline (e.g., Jane Doe)" required>
     <textarea name="text" placeholder="Write your story here (max 1,000 words)" rows="10" required></textarea>
     <input type="file" name="image" accept="image/*">
-    <input name="delete_code" placeholder="Delete code (optional)">
-    <button type="submit">Publish</button>
+        <button type="submit">Publish</button>
   </form>
 
   <h2>Published Stories</h2>
