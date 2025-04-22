@@ -28,9 +28,11 @@ def save_stories(stories):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # Purge stories older than 120 days
+    stories = load_stories()
+    admin_mode = request.args.get('admin') == ADMIN_KEY
+
     cutoff = time.time() - 120 * 24 * 60 * 60
-    stories = [s for s in load_stories() if s.get('timestamp', time.time()) >= cutoff]
+    stories = [s for s in stories if s.get('timestamp', time.time()) >= cutoff]
     save_stories(stories)
     stories = load_stories()
     stories = sorted(stories, key=lambda x: x['id'], reverse=True)
