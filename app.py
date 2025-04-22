@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string, redirect, url_for, send_from_directory, abort, jsonify
+from flask import Flask, request, render_template_string, redirect, url_for, send_from_directory, abort, jsonify, session
 import os
 import json
 import uuid
@@ -28,7 +28,6 @@ def save_stories(stories):
         json.dump(stories, f, indent=2)
 
 @app.route('/', methods=['GET', 'POST'])
-from flask import session
 
 def index():
     stories = load_stories()
