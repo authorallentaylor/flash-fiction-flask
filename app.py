@@ -200,7 +200,7 @@ STORY_TEMPLATE = """
     <button type="submit">Comment</button>
   </form>
   {% if admin %}
-    <form method="POST" action="{{ url_for('delete_story', story_id=story.id) }}?admin={{ admin|tojson|safe }}">
+    <form method="POST" action="{{ url_for('delete_story', story_id=story.id) }}?admin=secret-admin">
       <button type="submit" onclick="return confirm('Delete this story?')">Delete</button>
     </form>
   {% endif %}
