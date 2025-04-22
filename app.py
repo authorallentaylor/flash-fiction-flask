@@ -19,12 +19,19 @@ def load_stories():
     return []
 
 # Save stories to JSON file
+import time
+
+# Save stories to JSON file
 def save_stories(stories):
     with open(STORY_FILE, 'w') as f:
         json.dump(stories, f, indent=2)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # Purge stories older than 120 days
+    cutoff = time.time() - 120 * 24 * 60 * 60
+    stories = [s for s in load_stories() if s.get('timestamp', time.time()) >= cutoff]
+    save_stories(stories)
     stories = load_stories()
     stories = sorted(stories, key=lambda x: x['id'], reverse=True)
 
@@ -47,6 +54,7 @@ def index():
 
         story_id = str(uuid.uuid4())[:8]
         new_story = {
+            'timestamp': time.time(),
             'id': story_id,
             'title': title,
             'byline': byline,
