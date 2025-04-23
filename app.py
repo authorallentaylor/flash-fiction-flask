@@ -16,7 +16,21 @@ ADMIN_KEY = 'secret-admin'  # Change this to something secure
 def load_stories():
     if os.path.exists(STORY_FILE):
         with open(STORY_FILE, 'r') as f:
-            return json.load(f)
+            stories = json.load(f)
+        changed = False
+        for story in stories:
+            if 'timestamp' not in story:
+                story['timestamp'] = time.time()
+                changed = True
+            if 'likes' not in story:
+                story['likes'] = 0
+                changed = True
+            if 'comments' not in story:
+                story['comments'] = []
+                changed = True
+        if changed:
+            save_stories(stories)
+        return stories
     return []
 
 # Save stories to JSON file
@@ -76,24 +90,33 @@ def index():
 
         stories.append(new_story)
         save_stories(stories)
+        print(f"New story published: {title} by {byline}")
 
         return redirect(url_for('show_story', story_id=story_id, admin=request.args.get('admin')))
 
     return render_template_string(INDEX_TEMPLATE, stories=stories, admin=session.get('admin', False))
 
 @app.route('/story/<story_id>', methods=['GET', 'POST'])
-def show_story(story_id):
+@app.route('/story/<story_id>/delete_comment/<int:comment_index>', methods=['POST'])
+def show_story(story_id, comment_index=None):
     admin_mode = session.get('admin', False)
     stories = load_stories()
     story = next((s for s in stories if s['id'] == story_id), None)
     if not story:
         abort(404)
 
-    if request.method == 'POST':
-        comment = request.form.get('comment', '').strip()
-        if comment:
-            story['comments'].append(comment)
-            save_stories(stories)
+        if request.method == 'POST':
+        if comment_index is not None and admin_mode:
+            if 0 <= comment_index < len(story['comments']):
+                del story['comments'][comment_index]
+                save_stories(stories)
+                return redirect(url_for('show_story', story_id=story_id))
+        else:
+            comment = request.form.get('comment', '').strip()
+            if comment:
+                story['comments'].append(comment)
+                save_stories(stories)
+                print(f"New comment added to story '{story['title']}': {comment}")
 
     return render_template_string(STORY_TEMPLATE, story=story, admin=session.get('admin', False))
 
@@ -198,7 +221,7 @@ STORY_TEMPLATE = """
   <h3>Comments</h3>
   <ul>
     {% for comment in story.comments %}
-      <li>{{ comment }}</li>
+      <li>{{ comment }}{% if admin %} <form method="POST" action="{{ url_for('show_story', story_id=story.id) }}/delete_comment/{{ loop.index0 }}?admin=secret-admin" style="display:inline"><button type="submit" style="color:red; background:none; border:none; cursor:pointer">✖</button></form>{% endif %}</li>
     {% endfor %}
   </ul>
   <form method="POST">
