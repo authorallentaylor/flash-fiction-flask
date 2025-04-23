@@ -35,12 +35,13 @@ def index():
         session['admin'] = True
     admin_mode = session.get('admin', False)
 
-    cutoff = time.time() - 120 * 24 * 60 * 60
     for story in stories:
         if 'timestamp' not in story:
             story['timestamp'] = time.time()
-    stories = [s for s in stories if s['timestamp'] >= cutoff]
     save_stories(stories)
+
+    cutoff = time.time() - 120 * 24 * 60 * 60
+    stories = [s for s in stories if s['timestamp'] >= cutoff]
     stories = load_stories()
     stories = sorted(stories, key=lambda x: x['id'], reverse=True)
 
