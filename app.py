@@ -105,7 +105,7 @@ def show_story(story_id, comment_index=None):
     if not story:
         abort(404)
 
-        if request.method == 'POST':
+    if request.method == 'POST':
         if comment_index is not None and admin_mode:
             if 0 <= comment_index < len(story['comments']):
                 del story['comments'][comment_index]
