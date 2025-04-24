@@ -12,6 +12,32 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 STORY_FILE = 'stories.json'
 ADMIN_KEY = 'secret-admin'  # Change this to something secure
 
+INDEX_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Write a Flash Fiction Story</title>
+</head>
+<body>
+  <h1>Submit Your Flash Fiction</h1>
+  <form method=\"POST\" enctype=\"multipart/form-data\">
+    <p><input name=\"title\" placeholder=\"Story Title\" required></p>
+    <p><input name=\"byline\" placeholder=\"Your Name\" required></p>
+    <p><textarea name=\"text\" placeholder=\"Write your story...\" rows=\"10\" cols=\"60\" required></textarea></p>
+    <p><input type=\"file\" name=\"image\"></p>
+    <p><button type=\"submit\">Save Story</button></p>
+  </form>
+  <hr>
+  <h2>Published Stories</h2>
+  <ul>
+    {% for story in stories %}
+      <li><a href=\"{{ url_for('show_story', story_id=story.id) }}\">{{ story.title }}</a> by {{ story.byline }}</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
+"""
+
 # Load stories from JSON file
 def load_stories():
     if os.path.exists(STORY_FILE):
