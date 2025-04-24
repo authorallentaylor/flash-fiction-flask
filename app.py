@@ -77,6 +77,7 @@ def index():
             image_file.save(image_path)
 
         story_id = str(uuid.uuid4())[:8]
+        edit_code = str(uuid.uuid4())[:8]
         new_story = {
             'timestamp': time.time(),
             'id': story_id,
@@ -85,8 +86,8 @@ def index():
             'text': text,
             'image': filename,
             'likes': 0,
-            'comments': []
-        }
+            'comments': [],
+            'edit_code': edit_code
 
         stories.append(new_story)
         save_stories(stories)
@@ -102,6 +103,8 @@ def show_story(story_id, comment_index=None):
     admin_mode = session.get('admin', False)
     stories = load_stories()
     story = next((s for s in stories if s['id'] == story_id), None)
+    user_edit_code = request.args.get('edit')
+    can_edit = user_edit_code and user_edit_code == story.get('edit_code')
     if not story:
         abort(404)
 
@@ -118,7 +121,7 @@ def show_story(story_id, comment_index=None):
                 save_stories(stories)
                 print(f"New comment added to story '{story['title']}': {comment}")
 
-    return render_template_string(STORY_TEMPLATE, story=story, admin=session.get('admin', False))
+    return render_template_string(STORY_TEMPLATE, story=story, admin=session.get('admin', False), can_edit=can_edit)
 
 @app.route('/like/<story_id>', methods=['POST'])
 def like_story(story_id):
@@ -248,11 +251,12 @@ STORY_TEMPLATE = """
   <h3>Comments</h3>
   <ul>
     {% for comment in story.comments %}
-      <li>{{ comment }}{% if admin %} <form method="POST" action="{{ url_for('show_story', story_id=story.id) }}/delete_comment/{{ loop.index0 }}?admin=secret-admin" style="display:inline"><button type="submit" style="color:red; background:none; border:none; cursor:pointer">✖</button></form>{% endif %}</li>
+      <li>{{ comment }} <button style="margin-left: 0.5rem; font-size: 0.9rem; background-color: black; color: silver; border: 1px solid silver; cursor: pointer;">👍</button>{% if admin %} <form method="POST" action="{{ url_for('show_story', story_id=story.id) }}/delete_comment/{{ loop.index0 }}?admin=secret-admin" style="display:inline"><button type="submit" style="color:red; background:none; border:none; cursor:pointer">✖</button></form>{% endif %}</li>
     {% endfor %}
   </ul>
   <form method="POST">
-    <textarea name="comment" placeholder="Leave a comment..." required></textarea>
+    <textarea name="comment" placeholder="Leave a comment..." rows="4" style="width: 100%; padding: 0.5rem; font-size: 1rem; resize: vertical;" required></textarea>
+    <input type="hidden" name="edit_code" value="{{ story.edit_code }}">
     <button type="submit">Comment</button>
   </form>
   {% if admin %}
@@ -260,7 +264,12 @@ STORY_TEMPLATE = """
       <button type="submit" onclick="return confirm('Delete this story?')">Delete</button>
     </form>
   {% endif %}
-  <p><a href="/">← Back to all stories</a></p>
+  {% if can_edit %}
+  <form method="POST" action="/edit/{{ story.id }}?edit={{ story.edit_code }}">
+    <button type="submit">Edit Story</button>
+  </form>
+{% endif %}
+<p><a href="/">← Back to all stories</a></p>
 </body>
 </html>
 """
