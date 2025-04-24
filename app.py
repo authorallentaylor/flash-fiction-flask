@@ -3,6 +3,7 @@ import os
 import json
 import uuid
 from werkzeug.utils import secure_filename
+import time
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'
@@ -60,8 +61,6 @@ def load_stories():
     return []
 
 # Save stories to JSON file
-import time
-
 def save_stories(stories):
     with open(STORY_FILE, 'w') as f:
         json.dump(stories, f, indent=2)
@@ -80,7 +79,6 @@ def index():
 
     cutoff = time.time() - 120 * 24 * 60 * 60
     stories = [s for s in stories if s['timestamp'] >= cutoff]
-    stories = load_stories()
     stories = sorted(stories, key=lambda x: x['id'], reverse=True)
 
     if request.method == 'POST':
@@ -129,25 +127,49 @@ def show_story(story_id):
     if not story:
         abort(404)
     return render_template_string("""
+    <!DOCTYPE html>
     <html>
     <head>
       <title>{{ story.title }}</title>
       <style>
         body { font-family: sans-serif; max-width: 700px; margin: 2rem auto; padding: 1rem; }
+        .button { font-size: 1rem; padding: 0.5rem 1rem; margin: 0.25rem; border: 2px solid silver; background: black; color: white; cursor: pointer; display: inline-block; }
+        .comment-box { width: 100%; height: 100px; }
       </style>
     </head>
     <body>
       <h1>{{ story.title }}</h1>
       <p><em>by {{ story.byline }}</em></p>
       <p>{{ story.text }}</p>
+
+      <div>
+        <button class="button" onclick="navigator.clipboard.writeText(window.location.href)">Copy Link</button>
+        <a href="https://twitter.com/intent/tweet?url={{ request.url }}" target="_blank" class="button">Share to X</a>
+      </div>
+
+      <div>
+        <form method="POST" action="/like/{{ story.id }}">
+          <button type="submit" class="button">👍 Like ({{ story.likes }})</button>
+        </form>
+      </div>
+
+      <h2>Comments</h2>
+      <ul>
+        {% for comment in story.comments %}
+          <li>{{ comment }}</li>
+        {% endfor %}
+      </ul>
+
+      <form method="POST" action="/comment/{{ story.id }}">
+        <textarea name="comment" placeholder="Leave a comment..." class="comment-box"></textarea><br>
+        <button type="submit" class="button">Comment</button>
+      </form>
+
       <p><a href="/">← Back to all stories</a></p>
     </body>
     </html>
     """, story=story)
 
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-
-# ... the rest of the code remains unchanged ...
