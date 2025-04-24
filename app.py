@@ -6,13 +6,18 @@ from werkzeug.utils import secure_filename
 import time
 
 app = Flask(__name__)
-BASE_URL = 'https://authorallentaylor.com'
+BASE_URL = 'https://flash-fiction-flask.onrender.com'
 app.secret_key = 'your-secret-key'
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 STORY_FILE = 'stories.json'
 ADMIN_KEY = 'secret-admin'  # Change this to something secure
+
+# Ensure stories.json exists
+if not os.path.exists(STORY_FILE):
+    with open(STORY_FILE, 'w') as f:
+        json.dump([], f)
 
 INDEX_TEMPLATE = """
 <!DOCTYPE html>
@@ -144,8 +149,8 @@ def show_story(story_id):
       <p>{{ story.text }}</p>
 
       <div>
-        <button class="button" onclick="navigator.clipboard.writeText('{{ base_url }}/story/{{ story.id }}')">Copy Link</button>
-        <a href="https://twitter.com/intent/tweet?url={{ base_url }}/story/{{ story.id }}" target="_blank" class="button">Share to X</a>
+        <button class="button" onclick="navigator.clipboard.writeText('https://flash-fiction-flask.onrender.com/story/{{ story.id }}')">Copy Link</button>
+        <a href="https://twitter.com/intent/tweet?url=https://flash-fiction-flask.onrender.com/story/{{ story.id }}" target="_blank" class="button">Share to X</a>
       </div>
 
       <div>
