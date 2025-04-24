@@ -78,8 +78,9 @@ def index():
     save_stories(stories)
 
     cutoff = time.time() - 120 * 24 * 60 * 60
-    stories = [s for s in stories if s['timestamp'] >= cutoff]
-    stories = sorted(stories, key=lambda x: x['id'], reverse=True)
+    filtered_stories = [s for s in stories if s['timestamp'] >= cutoff]
+    print(f"Loaded {len(filtered_stories)} active stories (cutoff = {cutoff})")
+    stories = sorted(filtered_stories, key=lambda x: x['id'], reverse=True)
 
     if request.method == 'POST':
         title = request.form['title']
