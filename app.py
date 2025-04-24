@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 import time
 
 app = Flask(__name__)
+BASE_URL = 'https://authorallentaylor.com'
 app.secret_key = 'your-secret-key'
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -143,8 +144,8 @@ def show_story(story_id):
       <p>{{ story.text }}</p>
 
       <div>
-        <button class="button" onclick="navigator.clipboard.writeText(window.location.href)">Copy Link</button>
-        <a href="https://twitter.com/intent/tweet?url={{ request.url }}" target="_blank" class="button">Share to X</a>
+        <button class="button" onclick="navigator.clipboard.writeText('{{ base_url }}/story/{{ story.id }}')">Copy Link</button>
+        <a href="https://twitter.com/intent/tweet?url={{ base_url }}/story/{{ story.id }}" target="_blank" class="button">Share to X</a>
       </div>
 
       <div>
@@ -168,7 +169,18 @@ def show_story(story_id):
       <p><a href="/">← Back to all stories</a></p>
     </body>
     </html>
-    """, story=story)
+    """, story=story, base_url=BASE_URL)
+
+@app.route('/like/<story_id>', methods=['POST'])
+def like_story(story_id):
+    stories = load_stories()
+    for story in stories:
+        if story['id'] == story_id:
+            story['likes'] += 1
+            save_stories(stories)
+            break
+    return redirect(url_for('show_story', story_id=story_id))
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
