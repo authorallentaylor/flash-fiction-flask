@@ -202,8 +202,17 @@ STORY_TEMPLATE = """
     img { max-height: 300px; margin-bottom: 1rem; display: block; }
   </style>
   <script>
-    function copyLink() {
-      navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied to clipboard!'));
+    function copyLink(btn) {
+      const link = window.location.href;
+      navigator.clipboard.writeText(link)
+        .then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy Link', 2000);
+        })
+        .catch(err => {
+          console.error('Clipboard error:', err);
+          alert('Copy failed. You can manually copy the URL from your browser.');
+        });
     }
   </script>
 </head>
@@ -214,7 +223,8 @@ STORY_TEMPLATE = """
     <img src="{{ url_for('uploaded_file', filename=story.image) }}" alt="Story image">
   {% endif %}
   <p style="white-space: pre-wrap;">{{ story.text }}</p>
-  <p><button onclick="copyLink()">Copy Link</button></p>
+  <p><button onclick="copyLink(this)">Copy Link</button></p>
+  <p><a href="https://twitter.com/intent/tweet?url={{ url_for('show_story', story_id=story.id, _external=True) }}" target="_blank">Share to X</a></p>
   <form method="POST" action="{{ url_for('like_story', story_id=story.id) }}">
     <button type="submit">👍 Like ({{ story.likes }})</button>
   </form>
