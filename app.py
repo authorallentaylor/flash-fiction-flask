@@ -128,7 +128,22 @@ def show_story(story_id):
     story = next((s for s in stories if s['id'] == story_id), None)
     if not story:
         abort(404)
-    return f"<h1>{story['title']}</h1><p><em>by {story['byline']}</em></p><p>{story['text']}</p>"
+    return render_template_string("""
+    <html>
+    <head>
+      <title>{{ story.title }}</title>
+      <style>
+        body { font-family: sans-serif; max-width: 700px; margin: 2rem auto; padding: 1rem; }
+      </style>
+    </head>
+    <body>
+      <h1>{{ story.title }}</h1>
+      <p><em>by {{ story.byline }}</em></p>
+      <p>{{ story.text }}</p>
+      <p><a href="/">← Back to all stories</a></p>
+    </body>
+    </html>
+    """, story=story)
 
 
 if __name__ == '__main__':
