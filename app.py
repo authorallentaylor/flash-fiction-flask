@@ -47,24 +47,27 @@ INDEX_TEMPLATE = """
 
 # Load stories from JSON file
 def load_stories():
-    if os.path.exists(STORY_FILE):
-        with open(STORY_FILE, 'r') as f:
+    if not os.path.exists(STORY_FILE):
+        return []
+    with open(STORY_FILE, 'r') as f:
+        try:
             stories = json.load(f)
-        changed = False
-        for story in stories:
-            if 'timestamp' not in story:
-                story['timestamp'] = time.time()
-                changed = True
-            if 'likes' not in story:
-                story['likes'] = 0
-                changed = True
-            if 'comments' not in story:
-                story['comments'] = []
-                changed = True
-        if changed:
-            save_stories(stories)
-        return stories
-    return []
+        except json.JSONDecodeError:
+            return []
+    changed = False
+    for story in stories:
+        if 'timestamp' not in story:
+            story['timestamp'] = time.time()
+            changed = True
+        if 'likes' not in story:
+            story['likes'] = 0
+            changed = True
+        if 'comments' not in story:
+            story['comments'] = []
+            changed = True
+    if changed:
+        save_stories(stories)
+    return stories
 
 # Save stories to JSON file
 def save_stories(stories):
@@ -77,11 +80,6 @@ def index():
     if request.args.get('admin') == ADMIN_KEY:
         session['admin'] = True
     admin_mode = session.get('admin', False)
-
-    for story in stories:
-        if 'timestamp' not in story:
-            story['timestamp'] = time.time()
-    save_stories(stories)
 
     cutoff = time.time() - 120 * 24 * 60 * 60
 
@@ -122,7 +120,7 @@ def index():
 
         return redirect(url_for('show_story', story_id=story_id, admin=request.args.get('admin')))
 
-    active_stories = [s for s in stories if s['timestamp'] >= cutoff]
+    active_stories = [s for s in stories if s.get('timestamp', 0) >= cutoff]
     stories = sorted(active_stories, key=lambda x: x['timestamp'], reverse=True)
     return render_template_string(INDEX_TEMPLATE, stories=stories, admin=session.get('admin', False))
 
@@ -149,7 +147,6 @@ def show_story(story_id):
       <p>{{ story.text }}</p>
 
       <div>
-        <button class="button" onclick="navigator.clipboard.writeText('{{ base_url }}/story/{{ story.id }}')">Copy Link</button>
         <a href="https://twitter.com/intent/tweet?url={{ base_url }}/story/{{ story.id }}" target="_blank" class="button">Share to X</a>
       </div>
 
