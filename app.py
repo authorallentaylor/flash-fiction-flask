@@ -78,9 +78,6 @@ def index():
     save_stories(stories)
 
     cutoff = time.time() - 120 * 24 * 60 * 60
-    filtered_stories = [s for s in stories if s['timestamp'] >= cutoff]
-    print(f"Loaded {len(filtered_stories)} active stories (cutoff = {cutoff})")
-    stories = sorted(filtered_stories, key=lambda x: x['id'], reverse=True)
 
     if request.method == 'POST':
         title = request.form['title']
@@ -119,6 +116,8 @@ def index():
 
         return redirect(url_for('show_story', story_id=story_id, admin=request.args.get('admin')))
 
+    active_stories = [s for s in stories if s['timestamp'] >= cutoff]
+    stories = sorted(active_stories, key=lambda x: x['timestamp'], reverse=True)
     return render_template_string(INDEX_TEMPLATE, stories=stories, admin=session.get('admin', False))
 
 @app.route('/story/<story_id>', methods=['GET'])
