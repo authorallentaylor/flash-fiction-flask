@@ -122,6 +122,15 @@ def index():
 
     return render_template_string(INDEX_TEMPLATE, stories=stories, admin=session.get('admin', False))
 
+@app.route('/story/<story_id>', methods=['GET'])
+def show_story(story_id):
+    stories = load_stories()
+    story = next((s for s in stories if s['id'] == story_id), None)
+    if not story:
+        abort(404)
+    return f"<h1>{story['title']}</h1><p><em>by {story['byline']}</em></p><p>{story['text']}</p>"
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
