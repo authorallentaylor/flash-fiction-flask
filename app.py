@@ -200,6 +200,21 @@ STORY_TEMPLATE = """
   <style>
     body { font-family: sans-serif; max-width: 700px; margin: 2rem auto; padding: 1rem; }
     img { max-height: 300px; margin-bottom: 1rem; display: block; }
+    button, .button-link {
+      font-size: 1.2rem;
+      background-color: black;
+      color: silver;
+      border: 2px solid silver;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+    .button-link:hover {
+      background-color: silver;
+      color: black;
+    }
   </style>
   <script>
     function copyLink(btn) {
@@ -223,8 +238,10 @@ STORY_TEMPLATE = """
     <img src="{{ url_for('uploaded_file', filename=story.image) }}" alt="Story image">
   {% endif %}
   <p style="white-space: pre-wrap;">{{ story.text }}</p>
-  <p><button onclick="copyLink(this)">Copy Link</button></p>
-  <p><a href="https://twitter.com/intent/tweet?url={{ url_for('show_story', story_id=story.id, _external=True) }}" target="_blank">Share to X</a></p>
+  <p>
+    <button onclick="copyLink(this)">Copy Link</button>
+    <a class="button-link" href="https://twitter.com/intent/tweet?url={{ url_for('show_story', story_id=story.id, _external=True) }}" target="_blank">Share to X</a>
+  </p>
   <form method="POST" action="{{ url_for('like_story', story_id=story.id) }}">
     <button type="submit">👍 Like ({{ story.likes }})</button>
   </form>
