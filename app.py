@@ -11,7 +11,7 @@ app.secret_key = 'your-secret-key'
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-STORY_FILE = 'stories.json'
+STORY_FILE = os.path.join(app.root_path, 'stories.json')
 ADMIN_KEY = 'secret-admin'  # Change this to something secure
 
 # Ensure stories.json exists
@@ -147,8 +147,7 @@ def show_story(story_id):
       <p>{{ story.text }}</p>
 
       <div>
-        <a href="https://twitter.com/intent/tweet?url={{ base_url }}/story/{{ story.id }}" target="_blank" class="button">Share to X</a>
-      </div>
+              </div>
 
       <div>
         <form method="POST" action="/like/{{ story.id }}">
